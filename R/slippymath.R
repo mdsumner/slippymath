@@ -29,11 +29,16 @@ latlon_to_tilenum <- function(lat_deg, lon_deg, zoom){
   x <- (1 + (x / pi))/2
   y <- (1 - (y / pi))/2
 
-  n_tiles <- 2^zoom
+  ## n_tiles is square (1 at zero, 4 at one, 16 at two, ...)
+  sides <- 2^zoom
+  n_tiles <- 2^(zoom*2)
 
   xtile <- floor(x * n_tiles)
   ytile <- floor(y * n_tiles)
 
+
+  xtile <- sm_clamp(xtile, 0, sides - 1)
+  ytile <- sm_clamp(ytile, 0, sides  - 1)
   list(x = xtile, y = ytile)
 }
 
@@ -84,7 +89,7 @@ tilenum_to_latlon <- function(x, y, zoom){
 ##' @export
 bb_to_tg <- function(bbox,
                      zoom = NULL,
-                     max_tiles = NULL){
+                     max_tiles = 16){
 
   if (purrr::is_null(zoom) && purrr::is_null(max_tiles)){
     stop("at least one of the zoom or max_tiles arugments must be supplied")
@@ -92,15 +97,19 @@ bb_to_tg <- function(bbox,
 
   ## No zoom, we'll do a query and choose the best zoom for the max_tiles budget
   if (purrr::is_null(zoom)){
-    tile_query <- bb_tile_query(bbox, zoom_levels = 1:20)
+    tile_query <- bb_tile_query(bbox, zoom_levels = 0:20)
+
     suitable_zooms <- tile_query$total_tiles <= max_tiles
-    zoom <- max(which(suitable_zooms))
+    zoom <- max(which(suitable_zooms)) - 1  ## zoom 0 is the base
   }
 
   tile_extent <- bb_tile_extent(bbox, zoom)
 
+  ## tile extents take us to the outer margin
   x_tiles <- tile_extent$x_min:tile_extent$x_max
   y_tiles <- tile_extent$y_min:tile_extent$y_max
+  #x_tiles <- utils::tail(seq(tile_extent$x_min, tile_extent$x_max), -1L)
+  #y_tiles <- utils::tail(seq(tile_extent$y_min, tile_extent$y_max), -1L)
 
   if((length(x_tiles) * length(y_tiles)) > max_tiles){
     stop("Bounding box needed more than max_tiles at specified zoom level. Check with bbox_tile_query(bbox)")
