@@ -29,16 +29,12 @@ latlon_to_tilenum <- function(lat_deg, lon_deg, zoom){
   x <- (1 + (x / pi))/2
   y <- (1 - (y / pi))/2
 
-  ## n_tiles is square (1 at zero, 4 at one, 16 at two, ...)
-  sides <- 2^zoom
-  n_tiles <- 2^(zoom*2)
+  n_tiles <- 2^zoom
 
   xtile <- floor(x * n_tiles)
   ytile <- floor(y * n_tiles)
-
-
-  xtile <- sm_clamp(xtile, 0, sides - 1)
-  ytile <- sm_clamp(ytile, 0, sides  - 1)
+  xtile <- sm_clamp(xtile, 0, n_tiles - 1)
+  ytile <- sm_clamp(ytile, 0, n_tiles  - 1)
   list(x = xtile, y = ytile)
 }
 
