@@ -85,7 +85,7 @@ tilenum_to_latlon <- function(x, y, zoom){
 ##' @export
 bb_to_tg <- function(bbox,
                      zoom = NULL,
-                     max_tiles = 16){
+                     max_tiles = NULL){
 
   if (purrr::is_null(zoom) && purrr::is_null(max_tiles)){
     stop("at least one of the zoom or max_tiles arugments must be supplied")
@@ -107,7 +107,7 @@ bb_to_tg <- function(bbox,
   #x_tiles <- utils::tail(seq(tile_extent$x_min, tile_extent$x_max), -1L)
   #y_tiles <- utils::tail(seq(tile_extent$y_min, tile_extent$y_max), -1L)
 
-  if((length(x_tiles) * length(y_tiles)) > max_tiles){
+  if(!is.null(max_tiles) && (length(x_tiles) * length(y_tiles)) > max_tiles){
     stop("Bounding box needed more than max_tiles at specified zoom level. Check with bbox_tile_query(bbox)")
   }
 
